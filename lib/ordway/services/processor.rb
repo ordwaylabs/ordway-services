@@ -63,7 +63,7 @@ module Ordway
       end
 
       def called_service
-        @_called_service ||= self.class.name.demodulize.downcase
+        @_called_service ||= self.class.name.demodulize.underscore
       end
 
       # Log the start of the service call
