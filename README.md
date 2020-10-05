@@ -32,9 +32,17 @@ Your core business logic will be implemented here. This class should be inherite
 The Metadata config file should be placed under `config -> services -> post_process` folder. Make sure you name it `<service file name>.json`. Based on our example, it should be named `payments.json`. The events that should be executed after the service call, whether it is a success or failure, should be provided in this file. See the sample format [here](https://drive.google.com/file/d/1BP-JmxnvYlapR_FQl0DYlrZqirAqOJBd/view).
 
 ### 1.3 Post Processing events
-As mentioned in section 1.2, when the service call is finished processing, the post-events will be executed. The list of events mentioned in the metadata file should be implemented under `app -> lib -> services -> post_events` folder. For example, if in the config file, you mentioned calling a post-event named "journal_entry", make sure you implement it under the above-mentioned path. It will look like:
+As mentioned in section 1.2, when the service call is finished processing, the post-events will be executed. The list of events mentioned in the metadata file should be implemented under `app -> lib -> services -> post_events` folder.
+
+It is required that you should create a [base.rb](https://docs.google.com/document/d/e/2PACX-1vTbPqMrqmRd6k7K2NkfKpZ3JDBf6JtCMjKu64WVOmmpymgLiwLJmzUjT9wAyULVDnOJgyzI11PBN3_c/pub) file under `app -> lib -> services -> post_events`. Make sure you copy the code snippet to it.
+
+Once you do this, you can add files to the same folder with the same event name as mentioned in the metadata config file.
+
+For example, if in the config file, you mentioned calling a post-event named "journal_entry", make sure you implement it under the above-mentioned path. It will look like:
 
  `app -> lib -> services -> post_events -> journal_entry.rb`
+
+It is required that all the classes under post_events should be inherited from `Services::PostEvents::Base`, and it should contain only one public method called "process", which holds the core logic of the event.
 
 ### 1.4 Logging
 The whole request lifecycle will be logged. If you want to add additional logs in your service you can do so.
