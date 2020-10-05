@@ -9,6 +9,11 @@ module Ordway
 
       delegate :invalidate!, to: :result
 
+      # params-(hash) -> List of parameters required to process the service
+      #                if post-processing needed, make sure you add type of operation in params Hash
+      #                For eg: for payments, if you are performing a refund, then params[:type] = 'refund'
+      # source-(symbol) -> Defines the caller of the service
+      # options-(hash) -> Extra information required to process the service
       def initialize(params, source, options = nil)
         @params = params
         @source = source
@@ -23,7 +28,12 @@ module Ordway
         generate_request_id
         log_start
         process
-        post_processor_service
+        # Post processing will be called only if type of operation is defined in the params
+        if params[:type].present?
+          post_processor_service
+        else
+          logger.warn "Post processing won't be called since operation type is not found in params hash, for request: #{request_id}"
+        end
         result
       rescue InvalidException => e
         logger.error "InvalidException during service call #{request_id}: #{e}"

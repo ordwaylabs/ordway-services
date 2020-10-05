@@ -20,6 +20,8 @@ module Ordway
 
       def call
         perform_events(origin_events)
+      rescue Errno::ENOENT => e
+        logger.warn "Post processing meta data file not defined for the service with request ID: #{request_id}"
       end
 
       private
@@ -47,12 +49,12 @@ module Ordway
           logger.info "Calling post processing event for service request_id: #{request_id}: #{event_class}"
           Object.const_get("::Services::PostEvents::#{event_class}")
                 .send(:call, associated_object, caller_object, event_options)
-        rescue NameError => ex
-          logger.error "Name Error: #{ex.message}"
-          raise "Name Error: #{ex.message}"
-        rescue StandardError => ex
+        rescue NameError => e
+          logger.error "Name Error: #{e.message}"
+          raise "Name Error: #{e.message}"
+        rescue StandardError => e
           tries += 1
-          logger.error "Post processing exception request_id: #{request_id} - #{ex.message} : #{ex.backtrace}"
+          logger.error "Post processing exception request_id: #{request_id} - #{e.message} : #{e.backtrace}"
           retry unless tries >= retry_limit
         end
       end
