@@ -28,14 +28,20 @@ module Ordway
 
       # Perform the post process events
       def perform_events(events, pre_status = nil)
+        logger.info "Total events to be processed are: #{events}"
         events.each do |event|
+          logger.info "Starting Post processing event #{event}"
           response = execute(event, pre_status)
           logger.info "Post processing event response for event: #{event.keys.first.to_s.camelize}
                       request_id: #{request_id} - #{response}"
           # Find the next level of events to be executed based on the response status
           # statuses can be post_completed or post_failed
           next_level_events = event[event.keys.first]["post_#{response[:status]}".to_sym]
-          perform_events(next_level_events, response[:status]) unless next_level_events.empty?
+
+          logger.info "next level events : #{next_level_events}"
+          unless next_level_events.empty?
+            perform_events(next_level_events, response[:status])
+          end
         end
       end
 
