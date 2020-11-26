@@ -75,18 +75,13 @@ module Ordway
         @_associated_object ||= result.data[:associated_object]
       end
 
-      # Find the first post completion event to be executed if result status is :COMPLETED
-      # Find the first post failure event to be executed if the result status is :FAILED
+      # Find the first post completion event to be executed depending upon the result.status
       # For now we are considering only success and failure cases at the entry point of post process events
       # we may have more outcomes based on the processor response
       # This can be dealt with in the second phase of service framework implementation
       def origin_events
         action_based_config = config[operation.to_sym]
-        if result.status == :COMPLETED
-          action_based_config.first[:post_completed]
-        else
-          action_based_config.first[:post_failed]
-        end
+        action_based_config.first[result.status]
       end
 
       def build_options(event_params, pre_status)
