@@ -29,7 +29,7 @@ module Ordway
       # Perform the post process events
       def perform_events(events, pre_status = nil)
         logger.info "Total events to be processed are: #{events}"
-        events.each do |event|
+        events&.each do |event|
           logger.info "Starting Post processing event #{event}"
           response = execute(event, pre_status)
           logger.info "Post processing event response for event: #{event.keys.first.to_s.camelize}
@@ -81,7 +81,7 @@ module Ordway
       # This can be dealt with in the second phase of service framework implementation
       def origin_events
         action_based_config = config[operation.to_sym]
-        action_based_config.first[result.status]
+        action_based_config.first[result.status.to_sym]
       end
 
       def build_options(event_params, pre_status)
