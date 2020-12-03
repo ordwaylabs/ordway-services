@@ -81,6 +81,8 @@ module Ordway
       # This can be dealt with in the second phase of service framework implementation
       def origin_events
         action_based_config = config[operation.to_sym]
+        return logger.warn 'No action base config defined in configuration json file' unless action_based_config
+
         action_based_config.first[result.status.to_sym]
       end
 
