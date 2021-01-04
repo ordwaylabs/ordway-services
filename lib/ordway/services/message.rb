@@ -11,7 +11,7 @@ module Ordway
         message =
           if obj.is_a?(Symbol)
             I18n.t(obj)
-          elsif obj.is_a?(String)
+          else
             obj
           end
 
