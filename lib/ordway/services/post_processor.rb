@@ -27,11 +27,11 @@ module Ordway
       private
 
       # Perform the post process events
-      def perform_events(events, pre_status = nil)
+      def perform_events(events, pre_response = {})
         logger.info "Total events to be processed are: #{events}"
         events&.each do |event|
           logger.info "Starting Post processing event #{event}"
-          response = execute(event, pre_status)
+          response = execute(event, pre_response)
           logger.info "Post processing event response for event: #{event.keys.first.to_s.camelize}
                       request_id: #{request_id} - #{response}"
           # Find the next level of events to be executed based on the response status
@@ -40,21 +40,21 @@ module Ordway
 
           logger.info "next level events : #{next_level_events}"
           unless next_level_events.empty?
-            perform_events(next_level_events, response[:status])
+            perform_events(next_level_events, response)
           end
         end
       end
 
       # Invoke the event
-      def execute(event, pre_status)
+      def execute(event, pre_response)
         tries = 0
-        event_options = build_options(event.values.first, pre_status)
+        event_options = build_options(event.values.first, pre_response)
         retry_limit = event_options[:retry_limit] || 1
         begin
           event_class = event.keys.first.to_s.camelize
           logger.info "Calling post processing event for service request_id: #{request_id}: #{event_class}"
           Object.const_get("::Services::PostEvents::#{event_class}")
-                .send(:call, associated_object, caller_object, event_options)
+                .send(:call, fetch_associated_object(pre_response), caller_object, event_options)
         rescue NameError => e
           logger.error "Name Error: #{e.message}"
           raise "Name Error: #{e.message}"
@@ -75,6 +75,12 @@ module Ordway
         @_associated_object ||= result.data[:associated_object]
       end
 
+      # Fetches the associated_object from the data from each events in case we wanted to change objects.
+      # default will the main object the service is acted up on.
+      def fetch_associated_object(pre_response)
+        pre_response.dig(:data, :associated_object) || associated_object
+      end
+
       # Find the first post completion event to be executed depending upon the result.status
       # For now we are considering only success and failure cases at the entry point of post process events
       # we may have more outcomes based on the processor response
@@ -90,12 +96,13 @@ module Ordway
         action_based_config.first[result.status.to_sym]
       end
 
-      def build_options(event_params, pre_status)
+      def build_options(event_params, pre_response)
         {
           methods: event_params[:methods],
           retry_limit: event_params[:retry_limit],
           async: event_params[:async],
-          pre_status: pre_status
+          pre_status: pre_response.dig(:status),
+          action: pre_response.dig(:data, :action)
         }
       end
     end
