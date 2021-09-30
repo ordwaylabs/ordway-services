@@ -23,7 +23,9 @@ module Ordway
 
       # Add a validation error (if present) and raise an invalid exception
       def invalidate!(message = nil, status= :FAILED)
-        @status = status
+
+        @status = status if @status == :COMPLETED
+ 
         add_validation_error(message) if message.present?
         raise InvalidException(message)
       end
