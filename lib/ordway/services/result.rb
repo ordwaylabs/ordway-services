@@ -27,7 +27,7 @@ module Ordway
         @status = status if @status == :COMPLETED
  
         add_validation_error(message) if message.present?
-        raise InvalidException(message)
+        raise InvalidException.new(message)
       end
     end
   end
