@@ -22,9 +22,10 @@ module Ordway
       end
 
       # Add a validation error (if present) and raise an invalid exception
-      def invalidate!(message = nil)
+      def invalidate!(message = nil, status= :FAILED)
+        @status = status
         add_validation_error(message) if message.present?
-        raise InvalidException
+        raise InvalidException(message)
       end
     end
   end
