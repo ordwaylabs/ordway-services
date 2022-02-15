@@ -48,7 +48,7 @@ module Ordway
       # Invoke the event
       def execute(event, pre_response)
         tries = 0
-        event_options = build_options(event.values.first, pre_response)
+        event_options = build_options(event, pre_response)
         retry_limit = event_options[:retry_limit] || 1
         begin
           event_class = event.keys.first.to_s.camelize
@@ -96,13 +96,15 @@ module Ordway
         action_based_config.first[result.status.to_sym]
       end
 
-      def build_options(event_params, pre_response)
+      def build_options(event, pre_response)
+        event_params = event.values.first
         {
           methods: event_params[:methods],
           retry_limit: event_params[:retry_limit],
           async: event_params[:async],
           pre_status: pre_response.dig(:status),
-          action: pre_response.dig(:data, :action)
+          action: pre_response.dig(:data, :action),
+          name: event.keys.first.to_s.camelize
         }
       end
     end
