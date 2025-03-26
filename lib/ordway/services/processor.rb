@@ -58,6 +58,7 @@ module Ordway
       # Handles all the generic post processing events
       def post_processor_service
         logger.info "Post processing started for service #{request_id}"
+        ActiveRecord::Base.connection.commit_db_transaction
         Ordway::Services::PostProcessor.call(self, called_service, params[:type], result)
         logger.info "Post processing completed for service #{request_id}"
       end
